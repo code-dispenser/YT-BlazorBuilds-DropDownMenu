@@ -1,0 +1,65 @@
+﻿@page "/"
+@using static BlazorBuilds.Components.Pages.Weather
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, <span style="text-decoration:line-through">world!</span> multilevel dropdown menu!</h1>
+
+Welcome to your new app.
+
+<p class="mt-4 mb-4">@_message</p>
+
+<DropDownMenu DisplayText="Actions">
+    <DropDownMenuItem TData="int" ItemData="42" DisplayText="One" MenuName="mnuOne" MenuItemType="MenuItemType.Action" OnMenuItemClick="HandleMenuClick" />
+    <DropDownMenuItem TData="string" ItemData=@("hello from mnuTwo") DisplayText="Two" MenuName="mnuTwo" OnMenuItemClick="HandleMenuClick" />
+
+    <DropDownMenu DisplayText="3">
+        <DropDownMenuItem TData="decimal" ItemData="42.42M" DisplayText="Four" MenuName="mnuFour" OnMenuItemClick="HandleMenuClick" />
+
+        <DropDownMenu DisplayText="Five">
+            <DropDownMenuItem TData="DateOnly" DisplayText="Six" MenuName="mnuSix" MenuItemType="MenuItemType.Url" OnMenuItemClick="HandleMenuClick" />
+            <DropDownMenuItem TData="string" DisplayText="Counter [Opens new window]" MenuName="mnuSeven" Path="counter" Target="Target.Blank" MenuIconClass="new-window-icon" MenuItemType="MenuItemType.Url" OnMenuItemClick="HandleMenuClick" />
+        </DropDownMenu>
+    </DropDownMenu>
+    <DropDownMenuItem TData="string" DisplayText="Eight" MenuName="mnuEight" OnMenuItemClick="HandleMenuClick" />
+
+    <DropDownMenu DisplayText="Nine">
+        <DropDownMenuItem TData="object" DisplayText="Weather page" MenuName="mnuTen" MenuItemType="MenuItemType.Url" Target="Target.Self" Path="Weather" AutoNav="true" OnMenuItemClick="HandleMenuClick" />
+    </DropDownMenu>
+</DropDownMenu>
+
+<p class="mt-4 mb-2">Everything without JavaScript a part from the one thing, closing the menu when clicking outside of it.</p>
+
+<p class="mt-2 mb-4">As I had to use JavaScript for that I also added a small boundary check to move the submenus, just to get you started.</p>
+
+<ul style="display:flex; flex-direction:column; gap: 1rem;">
+    <li><kbd>Enter</kbd> Opens the sub menus or activates the menu item action or link. Opening a submenu sets focus to the first menu item.</li>
+    <li><kbd>Space</kbd> Same as enter.</li>
+    <li><kbd>Down Arrow</kbd> Opens the first submenu setting focus to first menu item when on the main button. Cycles down the menu items in the submenu, after the last menu item its start again from the first.</li>
+    <li><kbd>Up Arrow</kbd> Cycles up menu items, after the first menu item it starts again from the last</li>
+    <li><kbd>Left Arrow</kbd> Closes the submenu and sets focus to the item that opened it.</li>
+    <li><kbd>Right Arrow</kbd> If the menu item has a submenu, it opens the submenu and sets focus to the first menu item. No sub menu no movement.</li>
+    <li><kbd>Escape</kbd> Closes the submenu and sets focus to the item that opened it.</li>
+    <li><kbd>Home</kbd> Sets focus on the first menu item in the submenu.</li>
+    <li><kbd>End</kbd> Sets focus on the last menu item. in the submenu.</li>
+    <li><kbd>A-Za-z 0-9</kbd> Sets focus to the menu item that starts with the entered character. Case insensitive, cyclic i.e it moves to the next then starts again.</li>
+    <li><kbd>Shift + Tab</kbd> When inside a submenu closes all submenus and sets focus on the main button.</li>
+    <li><kbd>Tab</kbd> Gos to the next focusable item in the tab order outside of the submenus as the sbu menus do not use the tab key.</li>
+</ul>
+
+
+
+@code {
+    private WeatherForecast data = new();
+
+    private string _message = String.Empty;
+
+    private async Task HandleMenuClick<T>(MenuItemData<T> menuItemData)
+    {
+        var dataType = typeof(T).Name;
+        var payLoad = menuItemData.TryGetData(out var payLoadData) ? payLoadData : (object)"Null";
+
+        _message = $"Menu name: {menuItemData.MenuName} - Type: {menuItemData.MenuItemType.ToString()} - Target: {menuItemData.Target} - Path: {menuItemData.Path} - Payload data type: {dataType} - Payload:[{payLoad}]";
+        await Task.CompletedTask;
+    }
+}

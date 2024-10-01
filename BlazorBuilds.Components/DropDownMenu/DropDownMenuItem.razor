@@ -1,0 +1,121 @@
+﻿@inject NavigationManager _navigationManager
+@inject IJSRuntime _jsRuntime
+
+@typeparam TData
+@implements IFocusableChild
+
+<li role="none">
+
+    @{
+        var iconClass = GetStyleInfo(StyleInfo.DropDownMenuIcon);
+
+        @if (MenuItemType == MenuItemType.Action)
+        {
+            <button @ref="MenuItemRef" class="@GetStyleInfo(StyleInfo.DropDownMenuItem)" tabindex="-1" role="menuitem" @onclick="() => RaiseOnMenuItemClick()">
+
+                @if (false == String.IsNullOrWhiteSpace(iconClass))
+                {
+                    <span aria-hidden="true" class="@iconClass" style="@GetStyleInfo(StyleInfo.DropDownMenuIconClr)"></span>
+                }
+                <span>@DisplayText</span>
+
+            </button>
+        }
+        else
+        {
+            <a @ref="MenuItemRef" class="@GetStyleInfo(StyleInfo.DropDownMenuItem)" href="@Path" target="@(Target == Target.Self ? "_self" : "_blank")" tabindex="-1" role="menuitem"
+               @onclick="() => RaiseOnMenuItemClick()" @onclick:preventDefault="@(!AutoNav)" @onkeydown="HandleKeyPress" aria-current="@CurrentPage">
+
+                @if (false == String.IsNullOrWhiteSpace(iconClass))
+                {
+                    <span aria-hidden="true" class="@iconClass" style="@GetStyleInfo(StyleInfo.DropDownMenuIconClr)"></span>
+                }
+                <span>@DisplayText</span>
+
+            </a>
+        }
+    }
+
+</li>
+
+@code {
+
+    [CascadingParameter]        public DropDownMenu? ParentMenu  { get; set; } = default;
+    [Parameter, EditorRequired] public string        DisplayText { get; set; } = default!;
+    [Parameter, EditorRequired] public string        MenuName    { get; set; } = default!;
+
+    [Parameter] public EventCallback<MenuItemData<TData>> OnMenuItemClick { get; set; }
+
+    [Parameter] public string       MenuIconClass      { get; set; } = String.Empty;
+    [Parameter] public string       IconCssColourValue { get; set; } = String.Empty;
+    [Parameter] public MenuItemType MenuItemType       { get; set; } = MenuItemType.Action;
+    [Parameter] public Target       Target             { get; set; } = Target.Self;
+    [Parameter] public string       Path               { get; set; } = "/";
+    [Parameter] public TData?       ItemData           { get; set; } = default;
+    [Parameter] public bool         AutoNav            { get; set; } = true;
+
+    public  FocusItemType    FocusItemType  { get; } = FocusItemType.MenuItem;
+    private ElementReference MenuItemRef    { get; set; }
+    private string?          CurrentPage    { get; set; } = null;
+
+    protected override void OnInitialized()
+
+        => (ParentMenu is not null).WhenTrue(() => ParentMenu?.AddMenuItem(this));
+
+
+    protected override void OnParametersSet()
+    {
+        if (true == String.IsNullOrWhiteSpace(DisplayText)) throw new ArgumentNullException(nameof(DisplayText), GlobalStrings.Menu_Name_Exception_Message);
+        if (true == String.IsNullOrWhiteSpace(MenuName)) throw new ArgumentNullException(nameof(MenuName), GlobalStrings.Menu_Name_Exception_Message);
+        this.Path = String.IsNullOrWhiteSpace(this.Path) ? "/" : this.Path.Trim();
+
+        var pathUrl = _navigationManager.ToAbsoluteUri(Path).ToString().ToLower();
+        var navUrl  = _navigationManager.ToAbsoluteUri(_navigationManager.Uri).ToString().ToLower();
+
+        CurrentPage = ((pathUrl == navUrl) && MenuItemType == MenuItemType.Url) ? "Page" : null;
+
+        base.OnParametersSet();
+    }
+
+    private async Task RaiseOnMenuItemClick()
+    {
+        await OnMenuItemClick.HasDelegate.WhenTrue(() => OnMenuItemClick.InvokeAsync(new MenuItemData<TData>(MenuName, ItemData, MenuItemType, Path, Target)));
+        await this.ParentMenu!.MenuItemClicked();
+    }
+
+    public async ValueTask SetFocus()
+
+        => await MenuItemRef.FocusAsync();
+
+
+    private async Task SpaceBarLinkNavigation<T>(DropDownMenuItem<T> menuItem)
+    {
+        if (MenuItemType == MenuItemType.Url && true == AutoNav && Target == Target.Self)
+        {
+            _navigationManager.NavigateTo(menuItem.Path);
+            return;
+        }
+
+        await _jsRuntime.InvokeVoidAsync("open", menuItem.Path, "_blank");
+    }
+
+    public async Task HandleKeyPress(KeyboardEventArgs keyArgs)
+    {
+        if (keyArgs.Code == GlobalStrings.KeyBoard_Space_Key)
+        {
+            await (MenuItemType == MenuItemType.Url && true == AutoNav).WhenTrue(() => SpaceBarLinkNavigation(this));
+            await RaiseOnMenuItemClick();
+        }
+    }
+
+    private string? GetStyleInfo(StyleInfo requestFor)
+
+        => requestFor switch
+        {
+            StyleInfo.DropDownMenuItem    => GlobalStrings.DropDown_Menu_Item_Class,
+            StyleInfo.DropDownMenuIcon    => String.IsNullOrWhiteSpace(MenuIconClass) ? null : $"{MenuIconClass} {GlobalStrings.DropDown_Menu_Icon_Class} {GlobalStrings.DropDown_Menu_Icon_Pad_Class}",
+            StyleInfo.DropDownMenuIconClr => String.IsNullOrWhiteSpace(IconCssColourValue) ? null: $"{GlobalStrings.DropDown_Menu_Icon_Style_Clr}:{IconCssColourValue};".Replace(";;",";"),
+            _                             => String.Empty
+        };
+}
+

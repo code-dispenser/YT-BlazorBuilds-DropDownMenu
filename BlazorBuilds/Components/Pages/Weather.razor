@@ -1,0 +1,89 @@
+﻿@page "/weather"
+
+<PageTitle>Weather</PageTitle>
+
+<h1>Weather</h1>
+
+<p>This component demonstrates showing data.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @*
+    I copy pasted the default stuff that was here to the WeatherTable component just to demonstrate the drop down menu
+
+    Note having a cascadingtypeparameter and using TData in the parent i.e DropDownMenu<TData> which then allows you to specify
+    TData in <DropDownMenu TData ...> to negate adding it to children, does not werk with EventCallBack so you still
+    have to either add TData to the child or give the type in a lambda for the OnMenuClick. Just incase you were wondering why I did not add TData to
+    the parent and use inference from the cascadingtypeparameter. See https://github.com/dotnet/razor/issues/10757
+
+*@
+
+    <p class="mb-6">@_message</p>
+
+    <WeatherTable WeatherData="@forecasts.ToList()">
+        <CellTemplate Context="rowItem">
+            <DropDownMenu DisplayText="Actions">
+
+                <DropDownMenuItem TData="WeatherForecast" DisplayText="View Summary" MenuName="View" ItemData="rowItem" MenuIconClass="spectacles-icon"
+                                  IconCssColourValue="blue;" MenuItemType="MenuItemType.Action" OnMenuItemClick="HandleMenuClick" />
+
+                <DropDownMenuItem TData="WeatherForecast" DisplayText="Edit weather" MenuName="Edit" ItemData="rowItem" MenuIconClass="pencil-icon"
+                                  IconCssColourValue="green;" MenuItemType="MenuItemType.Action" OnMenuItemClick="HandleMenuClick" />
+
+                <DropDownMenuItem DisplayText="Delete entry" MenuName="Delete" ItemData="rowItem" MenuIconClass="trash-icon"
+                                  IconCssColourValue="red;" MenuItemType="MenuItemType.Action" OnMenuItemClick="async (MenuItemData<WeatherForecast> data) => await HandleMenuClick(data)" />
+                @*
+            Use either TData and specify the type as of the first two items or specify the type in the lambda as above
+            *@
+            </DropDownMenu>
+        </CellTemplate>
+    </WeatherTable>
+
+
+}
+@code {
+    private WeatherForecast[]? forecasts;
+
+    private string _message = "Click menu item for details";
+    public async Task HandleMenuClick(MenuItemData<WeatherForecast> menuItem)
+    {
+        string payLoad = String.Empty;
+
+        if (true == menuItem.TryGetData(out var data))
+        {
+            payLoad = $"Date: {data.Date.ToString()} - TempF: {data.TemperatureF} - TempC: {data.TemperatureC} - Summary: {data.Summary}";
+        }
+
+        _message = $"Menu name: {menuItem.MenuName} - Menu type: {menuItem.MenuItemType.ToString()} - Payload: [{payLoad}]";
+
+
+        await Task.CompletedTask;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulate asynchronous loading to demonstrate a loading indicator
+        await Task.Delay(500);
+
+        var startDate = DateOnly.FromDateTime(DateTime.Now);
+        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+        forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            {
+                Date = startDate.AddDays(index),
+                TemperatureC = Random.Shared.Next(-20, 55),
+                Summary = summaries[Random.Shared.Next(summaries.Length)]
+            }).ToArray();
+    }
+
+    public class WeatherForecast
+    {
+        public DateOnly Date { get; set; }
+        public int TemperatureC { get; set; }
+        public string? Summary { get; set; }
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+}

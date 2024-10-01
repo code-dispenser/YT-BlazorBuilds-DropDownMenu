@@ -1,0 +1,32 @@
+﻿
+<CascadingValue Value="this" IsFixed="true">
+
+    @if (true == IsRootMenu)
+    {
+        <div @ref="@DropDownMenuRef" class="dropdown">
+            <button @ref="MainButtonRef" id="~@MenuID" class="dropdown__opener" aria-haspopup="true" aria-expanded="@IsActive.ToString().ToLower()" aria-controls="@MenuID"
+            @onkeydown:stopPropagation @onkeydown="HandleDownArrowOpen" @onclick="ToggleButtonMenu">
+                <span>@DisplayText</span>
+                <span class="dropdown__menu-icon chevron-down-icon"></span>
+            </button>
+            <ul @ref="ElementRef" id="@MenuID" aria-label="@DisplayText" class="@GetStyleInfo(StyleInfo.DropDownMenu)" role="menu" @onkeydown="HandleKeyPress" @onkeydown:stopPropagation>
+                @ChildContent
+            </ul>
+        </div>
+
+    }
+    else
+    {
+        <li role="none">
+            <button @ref="ElementRef" class="@GetStyleInfo(StyleInfo.DropDownMenuToggler)" role="menuitem" aria-haspopup="true" aria-expanded="@IsActive.ToString().ToLower()" aria-controls="@MenuID" 
+            @onclick="ToggleDropDownMenu" tabindex="-1">
+                <span>@DisplayText</span>
+                <span class="dropdown__menu-icon chevron-right-icon"></span>
+            </button>
+            <ul id="@MenuID" class="@GetStyleInfo(StyleInfo.DropDownMenu)" aria-label="@DisplayText" role="menu" @onkeydown="HandleKeyPress" @onkeydown:stopPropagation>
+                @ChildContent
+            </ul>
+        </li>
+    }
+
+</CascadingValue>
