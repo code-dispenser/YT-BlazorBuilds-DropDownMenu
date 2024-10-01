@@ -4,7 +4,7 @@
 
 This repository contains the solution used in my YouTube video showing how to build an accessible multilevel DropDown Menu component for Blazor following the ARIA authoring practice guidelines for the Menu pattern.
 
-YouTube video: Will upload and update later today
+YouTube video: https://youtu.be/8nBl6PsnY_8
 
 Coffees welcomed : https://ko-fi.com/codedispenser
 
