@@ -4,6 +4,8 @@
 
 This repository contains the solution used in my YouTube video showing how to build an accessible multilevel DropDown Menu component for Blazor following the ARIA authoring practice guidelines for the Menu pattern.
 
+Amended incorrect typescript unRegisterLostMenuFocus method. The Blazor component gets destroyed so it did/does not cause any problem but I like good clean up.
+
 YouTube video: https://youtu.be/8nBl6PsnY_8
 
 Coffees welcomed : https://ko-fi.com/codedispenser

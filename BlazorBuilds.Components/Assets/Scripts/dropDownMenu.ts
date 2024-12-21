@@ -1,4 +1,6 @@
-﻿const raiseLostFocus = (blazorCallBackRef: any, callBackName: string) => blazorCallBackRef.invokeMethodAsync(callBackName);
+﻿const _handlerMap = new WeakMap<HTMLElement, EventListener>();
+
+const raiseLostFocus = (blazorCallBackRef: any, callBackName: string) => blazorCallBackRef.invokeMethodAsync(callBackName);
 
 function registerLostMenuFocus(blazorCallBackRef: any, callBackName: string, element: HTMLElement): void {
 
@@ -8,18 +10,18 @@ function registerLostMenuFocus(blazorCallBackRef: any, callBackName: string, ele
             raiseLostFocus(blazorCallBackRef, callBackName);
         }
     };
+
     element.addEventListener("focusout", handler);
+    _handlerMap.set(element, handler as EventListener);
 }
 
 function unRegisterLostMenuFocus(blazorCallBackRef: any, callBackName: string, element: HTMLElement): void {
 
-    const handler = (event: FocusEvent) => {
+    const handler = _handlerMap.get(element);
 
-        if (!element.contains(event.relatedTarget as Node)) {
-            raiseLostFocus(blazorCallBackRef, callBackName);
-        }
-    };
-    element?.removeEventListener("focusout", handler);
+    if (handler) element?.removeEventListener("focusout", handler)
+
+    _handlerMap.delete(element);
 }
 
 

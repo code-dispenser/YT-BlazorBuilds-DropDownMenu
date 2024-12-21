@@ -1,3 +1,4 @@
+const _handlerMap = new WeakMap();
 const raiseLostFocus = (blazorCallBackRef, callBackName) => blazorCallBackRef.invokeMethodAsync(callBackName);
 function registerLostMenuFocus(blazorCallBackRef, callBackName, element) {
     const handler = (event) => {
@@ -6,14 +7,13 @@ function registerLostMenuFocus(blazorCallBackRef, callBackName, element) {
         }
     };
     element.addEventListener("focusout", handler);
+    _handlerMap.set(element, handler);
 }
 function unRegisterLostMenuFocus(blazorCallBackRef, callBackName, element) {
-    const handler = (event) => {
-        if (!element.contains(event.relatedTarget)) {
-            raiseLostFocus(blazorCallBackRef, callBackName);
-        }
-    };
-    element === null || element === void 0 ? void 0 : element.removeEventListener("focusout", handler);
+    const handler = _handlerMap.get(element);
+    if (handler)
+        element === null || element === void 0 ? void 0 : element.removeEventListener("focusout", handler);
+    _handlerMap.delete(element);
 }
 function checkMenuBoundaries(classSelelctor, classToAdd) {
     var menusToCheck = Array.from(document.querySelectorAll(classSelelctor));
