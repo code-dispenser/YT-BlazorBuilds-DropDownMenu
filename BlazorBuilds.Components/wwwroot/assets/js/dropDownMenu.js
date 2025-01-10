@@ -9,11 +9,12 @@ function registerLostMenuFocus(blazorCallBackRef, callBackName, element) {
     element.addEventListener("focusout", handler);
     _handlerMap.set(element, handler);
 }
-function unRegisterLostMenuFocus(blazorCallBackRef, callBackName, element) {
+function unRegisterLostMenuFocus(element) {
     const handler = _handlerMap.get(element);
-    if (handler)
-        element === null || element === void 0 ? void 0 : element.removeEventListener("focusout", handler);
-    _handlerMap.delete(element);
+    if (handler) {
+        element.removeEventListener("focusout", handler);
+        _handlerMap.delete(element);
+    }
 }
 function checkMenuBoundaries(classSelelctor, classToAdd) {
     var menusToCheck = Array.from(document.querySelectorAll(classSelelctor));

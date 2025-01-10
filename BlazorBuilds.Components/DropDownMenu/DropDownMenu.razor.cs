@@ -281,7 +281,7 @@ public partial class DropDownMenu : IFocusableChild, IAsyncDisposable
     {
         if (true == this.IsRootMenu && _jsModule is not null)
         {
-            await _jsModule!.InvokeVoidAsync(GlobalStrings.JavaScript_UnRegister_Func, _dropDownMenuObjectRef, nameof(FocusLeftControl), DropDownMenuRef);
+            await _jsModule!.InvokeVoidAsync(GlobalStrings.JavaScript_UnRegister_Func, DropDownMenuRef);
             await _jsModule.DisposeAsync();
             _dropDownMenuObjectRef?.Dispose();
         }
