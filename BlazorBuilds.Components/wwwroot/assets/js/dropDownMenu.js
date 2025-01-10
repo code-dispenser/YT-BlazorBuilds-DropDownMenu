@@ -10,6 +10,8 @@ function registerLostMenuFocus(blazorCallBackRef, callBackName, element) {
     _handlerMap.set(element, handler);
 }
 function unRegisterLostMenuFocus(element) {
+    if (!element)
+        return;
     const handler = _handlerMap.get(element);
     if (handler) {
         element.removeEventListener("focusout", handler);

@@ -17,6 +17,8 @@ function registerLostMenuFocus(blazorCallBackRef: any, callBackName: string, ele
 
 function unRegisterLostMenuFocus(element: HTMLElement): void {
 
+    if (!element) return;
+
     const handler = _handlerMap.get(element);
 
     if (handler) {
